@@ -1,0 +1,9 @@
+node_modules
+dist
+pnpm-lock.yaml
+storybook-static
+test-results
+playwright-report
+backend
+artifacts
+.pnpm-store
