@@ -1,0 +1,66 @@
+name: verify commerce gateway workflows
+
+on:
+  workflow_dispatch:
+    inputs:
+      backend_ref:
+        description: Backend branch, tag or commit containing the storefront APIs
+        required: true
+        default: codex/full-stack-commerce
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      WEB_BASE_URL: http://localhost:8088
+      API_BASE_URL: http://localhost:8080
+      E2E_ENV_FILE: backend/.env
+      FRONTEND_SOURCE_PATH: ..
+      COMPOSE_PARALLEL_LIMIT: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: vixtruong/commerce-microservices
+          ref: ${{ inputs.backend_ref }}
+          path: backend
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: cp .env.example .env
+        working-directory: backend
+      - run: docker compose config --quiet
+        working-directory: backend
+      - run: docker compose up --build -d --wait --wait-timeout 300
+        working-directory: backend
+      - run: sh scripts/smoke-test.sh
+        working-directory: backend
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+      - name: verify payment compensation
+        run: |
+          PAYMENT_OUTCOME=Failure docker compose --project-directory backend up -d --no-deps --wait --wait-timeout 90 payment-api
+          PAYMENT_OUTCOME=Failure pnpm test:e2e --grep 'customer checkout'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-verification
+          path: |
+            playwright-report
+            test-results
+            artifacts/frontend-visual
+      - run: docker compose logs --tail 100
+        working-directory: backend
+        if: failure()
+      - run: docker compose down
+        working-directory: backend
+        if: always()
