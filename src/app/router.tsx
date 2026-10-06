@@ -134,6 +134,12 @@ export const router = createBrowserRouter([
                     element: <RequirePermission permission={P.ProductUpdate} />,
                     children: [
                       {
+                        path: 'collections',
+                        lazy: async () => ({
+                          Component: (await import('../features/admin-products/CollectionsPage')).default,
+                        }),
+                      },
+                      {
                         path: 'products/:id',
                         lazy: async () => ({
                           Component: (await import('../features/admin-products/ProductFormPage')).default,

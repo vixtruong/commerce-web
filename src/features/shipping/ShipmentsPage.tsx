@@ -67,9 +67,14 @@ export default function ShipmentsPage() {
       <PageHeader
         eyebrow="Sales"
         title="Shipments"
-        description="Track the persisted fulfilment lifecycle. Carrier tracking is not integrated."
+        description="Follow shipment preparation and delivery status."
       />
-      <ListFilters list={list} statuses={Object.keys(shipmentStatuses)} placeholder="Shipment or order ID" />
+      <ListFilters
+        list={list}
+        statuses={Object.keys(shipmentStatuses)}
+        statusKind="shipment"
+        placeholder="Shipment or order ID"
+      />
       {result.isPending ? (
         <Skeleton />
       ) : result.error ? (

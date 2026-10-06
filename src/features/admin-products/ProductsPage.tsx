@@ -100,7 +100,12 @@ export default function ProductsPage() {
           </Can>
         }
       />
-      <ListFilters list={list} statuses={['Draft', 'Active', 'Inactive']} placeholder="Name or SKU" />
+      <ListFilters
+        list={list}
+        statuses={['Draft', 'Active', 'Inactive']}
+        statusKind="product"
+        placeholder="Name or SKU"
+      />
       <label className="sort-control">
         Sort
         <select value={list.params.get('sort') || 'name'} onChange={(e) => list.set('sort', e.target.value)}>

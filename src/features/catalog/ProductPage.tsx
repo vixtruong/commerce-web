@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { productQuery, availabilityQuery } from './api';
-import { sampleMedia } from './sampleMedia';
+import { ProductGallery } from './ProductGallery';
+import { ShoppingBag } from 'lucide-react';
 import { money } from '../../lib/format';
 import { useUser } from '../../auth/useUser';
 import { useCartMutation } from '../cart/api';
@@ -39,23 +40,19 @@ export default function ProductPage() {
   };
   return (
     <>
-      <nav className="breadcrumb">
+      <nav className="breadcrumb" aria-label="Breadcrumb">
         <Link to="/products">Collection</Link>
         <span>/</span>
         <span>{p.name}</span>
       </nav>
       <div className="product-detail">
-        <div>
-          <div className="product-gallery">
-            <img src={sampleMedia(p.sku)} alt={p.name + ' sample illustration'} width="640" height="480" />
-          </div>
-          <p className="muted small">Sample product illustration.</p>
+        <div className="product-gallery-column">
+          <ProductGallery product={p} />
         </div>
         <section className="product-info">
           <span className="eyebrow">{p.sku}</span>
           <h1>{p.name}</h1>
           <p className="product-price">{money(p.priceAmount, p.priceCurrency)}</p>
-          <p>{p.description}</p>
           {stock.data ? (
             <>
               <StockStatus available={stock.data.availableQuantity} />
@@ -88,7 +85,7 @@ export default function ProductPage() {
               onClick={add}
               disabled={mutation.isPending || !stock.data || stock.data.availableQuantity < quantity}
             >
-              {mutation.isPending ? 'Adding…' : 'Add to cart'}
+              <ShoppingBag size={18} aria-hidden="true" /> {mutation.isPending ? 'Adding…' : 'Add to cart'}
             </button>
           </div>
           {added && (
@@ -100,7 +97,32 @@ export default function ProductPage() {
             </p>
           )}
           {mutation.error && <ErrorState error={mutation.error} />}
+          <p className="purchase-note">
+            Review your selection in the cart before checkout. Final prices and availability are confirmed
+            when you place your order.
+          </p>
+        </section>
+        <section className="product-description" aria-labelledby="product-details-heading">
+          <p className="eyebrow">The details</p>
+          <h2 id="product-details-heading">Made for your everyday.</h2>
+          <p>{p.description || 'No additional product description is available.'}</p>
           <dl className="detail-facts">
+            {p.brand && (
+              <div>
+                <dt>Brand</dt>
+                <dd>{p.brand}</dd>
+              </div>
+            )}
+            {p.categorySlug && (
+              <div>
+                <dt>Collection</dt>
+                <dd>
+                  <Link to={'/products?category=' + p.categorySlug}>
+                    {p.categorySlug.replaceAll('-', ' ')}
+                  </Link>
+                </dd>
+              </div>
+            )}
             <div>
               <dt>Product reference</dt>
               <dd>{p.sku}</dd>
@@ -114,6 +136,13 @@ export default function ProductPage() {
               <dd>Track processing and fulfilment in your account.</dd>
             </div>
           </dl>
+          {p.sourceUrl && (
+            <p className="small">
+              <a className="text-link" href={p.sourceUrl} target="_blank" rel="noopener noreferrer">
+                Manufacturer product reference ↗
+              </a>
+            </p>
+          )}
         </section>
       </div>
     </>

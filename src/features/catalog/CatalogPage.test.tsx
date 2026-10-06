@@ -12,7 +12,11 @@ vi.mock('../../api/client', async (importOriginal) => ({
 }));
 beforeEach(() => {
   vi.mocked(api).mockReset();
-  vi.mocked(api).mockResolvedValue({ items: [], page: 1, pageSize: 12, total: 0 });
+  vi.mocked(api).mockImplementation(async (path) =>
+    path.includes('/categories')
+      ? [{ id: 'keyboards', name: 'Keyboards', slug: 'keyboards', isActive: true, productCount: 38 }]
+      : { items: [], page: 1, pageSize: 12, total: 0 },
+  );
 });
 function Location() {
   return <output data-testid="location">{useLocation().search}</output>;
@@ -20,7 +24,9 @@ function Location() {
 function mount() {
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/products?minPrice=10&maxPrice=100&sort=newest&page=2']}>
+      <MemoryRouter
+        initialEntries={['/products?minPrice=10&maxPrice=100&sort=newest&page=2&category=keyboards']}
+      >
         <CatalogPage />
         <Location />
       </MemoryRouter>
@@ -29,12 +35,31 @@ function mount() {
 }
 it('resets all URL filters together rather than retaining earlier price fields', async () => {
   mount();
+  await userEvent.click(screen.getByText('Filters', { exact: true }));
   await userEvent.click(screen.getByRole('button', { name: 'Reset filters' }));
   expect(screen.getByLabelText('Minimum')).toHaveValue(null);
   expect(screen.getByLabelText('Maximum')).toHaveValue(null);
   expect(screen.getByLabelText('Sort by')).toHaveValue('name');
   expect(screen.getByTestId('location')).toHaveTextContent('page=1');
   expect(screen.getByTestId('location').textContent).not.toContain('Price');
+  expect(screen.getByTestId('location').textContent).not.toContain('category');
+});
+
+it('removes a collection filter while preserving search and price state', async () => {
+  mount();
+  await userEvent.click(screen.getByRole('button', { name: 'Remove collection filter' }));
+  expect(screen.getByTestId('location')).not.toHaveTextContent('category');
+  expect(screen.getByTestId('location')).toHaveTextContent('minPrice=10');
+  expect(screen.getByTestId('location')).toHaveTextContent('page=1');
+});
+it('removes one applied price filter while preserving the other filters and resetting pagination', async () => {
+  mount();
+  await userEvent.click(screen.getByRole('button', { name: 'Remove minimum price filter' }));
+  expect(screen.getByTestId('location')).not.toHaveTextContent('minPrice');
+  expect(screen.getByTestId('location')).toHaveTextContent('maxPrice=100');
+  expect(screen.getByTestId('location')).toHaveTextContent('sort=newest');
+  expect(screen.getByTestId('location')).toHaveTextContent('page=1');
+  expect(screen.queryByRole('button', { name: 'Remove minimum price filter' })).not.toBeInTheDocument();
 });
 it('debounces search into the URL and queries the first server page', async () => {
   mount();

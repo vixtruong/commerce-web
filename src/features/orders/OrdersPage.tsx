@@ -59,6 +59,7 @@ export default function OrdersPage({ admin = false }: { admin?: boolean }) {
       <ListFilters
         list={list}
         statuses={Object.keys(orderStatuses)}
+        statusKind="order"
         placeholder="Order number or ID"
         dates={admin}
       />

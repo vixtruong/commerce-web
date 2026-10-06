@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, afterEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { api, clearSession, saveTokens, retryQuery, ApiError } from './client';
@@ -14,8 +14,27 @@ afterAll(() => server.close());
 afterEach(() => {
   server.resetHandlers();
   clearSession();
+  vi.restoreAllMocks();
 });
 describe('Gateway client', () => {
+  it('sends multipart photo uploads with the browser boundary and existing authentication', async () => {
+    saveTokens(tokens);
+    const upload = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(
+        HttpResponse.json({ imageUrl: '/api/catalog/media/upload-test.png' }, { status: 201 }),
+      );
+    const body = new FormData();
+    body.append('file', new File(['photo'], 'photo.png', { type: 'image/png' }));
+    expect(await api('/api/catalog/images', { method: 'POST', body })).toEqual({
+      imageUrl: '/api/catalog/media/upload-test.png',
+    });
+    const options = upload.mock.calls[0][1];
+    expect(options?.body).toBe(body);
+    const headers = new Headers(options?.headers);
+    expect(headers.get('Authorization')).toBe('Bearer expired');
+    expect(headers.has('Content-Type')).toBe(false);
+  });
   it('rotates once for concurrent unauthorized requests', async () => {
     let refreshes = 0;
     saveTokens(tokens);

@@ -10,10 +10,13 @@ import { loginSchema, registrationSchema, type Credentials } from './schemas';
 import { Input } from '../../components/FormField';
 import { ErrorState } from '../../components/Feedback';
 import { applyServerErrors } from '../../lib/formErrors';
+import { useState } from 'react';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 export default function AuthPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const register = location.pathname === '/register';
+  const [showPassword, setShowPassword] = useState(false);
   const form = useForm<Credentials>({ resolver: zodResolver(register ? registrationSchema : loginSchema) });
   const mutation = useMutation({
     mutationFn: (body: Credentials) =>
@@ -32,21 +35,13 @@ export default function AuthPage() {
     onError: (error) => applyServerErrors(error, form.setError, ['email', 'password']),
   });
   return (
-    <div className="auth-grid">
-      <section className="auth-editorial">
-        <span className="eyebrow">Commerce / Your account</span>
-        <h1>
-          Good things,
-          <br />
-          all in one place.
-        </h1>
-        <p>Your selection. Your orders. A workspace made yours.</p>
-        <Link to="/products" className="text-link">
-          Explore the collection →
-        </Link>
-      </section>
-      <section className="auth-form">
-        <h2>{register ? messages.createYourAccount : messages.welcomeBack}</h2>
+    <div className="auth-page">
+      <Link to="/products" className="auth-back">
+        <ArrowLeft size={16} aria-hidden="true" /> Back to the collection
+      </Link>
+      <section className="auth-form" aria-labelledby="auth-heading">
+        <p className="eyebrow">Your Commerce account</p>
+        <h1 id="auth-heading">{register ? messages.createYourAccount : messages.welcomeBack}</h1>
         <p>{register ? messages.saveYourCart : messages.signInContinue}</p>
         <form onSubmit={form.handleSubmit((body) => mutation.mutate(body))} noValidate>
           <Input
@@ -57,15 +52,26 @@ export default function AuthPage() {
             {...form.register('email')}
             error={form.formState.errors.email?.message}
           />
-          <Input
-            label={messages.password}
-            type="password"
-            autoComplete={register ? 'new-password' : 'current-password'}
-            required
-            {...form.register('password')}
-            error={form.formState.errors.password?.message}
-            hint={register ? messages.passwordHint : undefined}
-          />
+          <div className="password-field">
+            <Input
+              label={messages.password}
+              type={showPassword ? 'text' : 'password'}
+              autoComplete={register ? 'new-password' : 'current-password'}
+              required
+              {...form.register('password')}
+              error={form.formState.errors.password?.message}
+              hint={register ? messages.passwordHint : undefined}
+            />
+            <button
+              className="icon-button password-toggle"
+              type="button"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+            </button>
+          </div>
           {mutation.error && <ErrorState error={mutation.error} />}
           <button className="button full" type="submit" disabled={mutation.isPending}>
             {mutation.isPending ? messages.pleaseWait : register ? messages.createAccount : messages.signIn}
