@@ -10,7 +10,30 @@ export interface Product {
   status: string;
   createdAtUtc: string;
   updatedAtUtc: string;
+  brand?: string | null;
+  imageUrl?: string | null;
+  imageUrls?: string[] | null;
+  sourceUrl?: string | null;
+  categorySlug?: string | null;
 }
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  productCount: number;
+}
+export const categoriesQuery = (includeInactive = false) =>
+  queryOptions({
+    queryKey: ['catalog', 'categories', includeInactive],
+    queryFn: ({ signal }) =>
+      api<Category[]>('/api/catalog/categories' + (includeInactive ? '?includeInactive=true' : ''), {
+        signal,
+        authenticated: includeInactive,
+      }),
+    staleTime: 30_000,
+    meta: { private: includeInactive },
+  });
 export interface ProductPage {
   items: Product[];
   page: number;
