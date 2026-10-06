@@ -61,4 +61,14 @@ Cũng có thể dùng `$env:E2E_ENV_FILE = '../Commerce/.env'` để đọc cấ
 
 Dockerfile build bằng Node/pnpm rồi chạy nginx không dùng root. nginx chỉ proxy đến hostname Gateway trong Compose, có SPA fallback, CSP và cache asset theo hash. Repository này không chứa backend hay kết nối database.
 
-Payment dùng provider development và không thu thập thông tin thẻ. Product media là illustration mẫu được ghi rõ. Refund, upload media, đổi mật khẩu, sửa profile, carrier integration và category assignment chưa có backend use case nên không hiển thị control giả.
+Payment dùng provider development và không thu thập thông tin thẻ. Product media dùng ảnh Catalog cùng origin khi có, fallback rõ ràng khi lỗi hoặc thiếu ảnh; hai SKU seed cũ vẫn có illustration mẫu ghi rõ. Product editor chọn tối đa 8 ảnh JPEG/PNG/WebP (5 MiB mỗi ảnh), xem trước, đổi ảnh chính và xóa; gallery và ảnh Cart lấy từ Catalog. Admin → Collections quản lý nhóm và product editor gán nhóm; Home/Catalog dùng số lượng và filter từ API. Bộ demo công nghệ/phụ kiện gồm 200 model/ảnh từ hãng, 60 tài khoản và 120 checkout, xem `../Commerce/docs/demo-data-guide.md`. Refund, đổi mật khẩu, sửa profile và carrier integration chưa có backend use case.
+
+## Giao diện và quy ước phát triển
+
+Thiết kế lấy **SkillNest làm trọng tâm**, với nền mint, sidebar/header trắng, điểm nhấn emerald, heading sans-serif đậm và metadata monospace. Góc bo giới hạn 4–8px; cấu trúc trang được thiết kế theo hành trình mua sắm và thao tác vận hành. Logbook bổ trợ phân cấp nội dung; DuelSheet không thuộc hướng thiết kế. Xem [nghiên cứu, kế hoạch và kết quả kiểm tra](docs/frontend-redesign-plan.md).
+
+Token nằm trong `src/styles/tokens.css`; `index.css` chỉ import stylesheet theo trách nhiệm: base/controls, storefront, commerce, admin và responsive. `Brand`, `CheckoutSteps`, feedback, status và table là component dùng chung. Command palette tìm kiếm trong các khu vực mà user có quyền; catalog dùng disclosure cho bộ lọc. Không thay đổi hợp đồng API, refresh hay Saga.
+
+Quy tắc duy trì kiến trúc, giao diện, accessibility, bảo mật và kiểm tra được ghi trong [AGENTS.md](AGENTS.md). Shared UI được mô tả trong Storybook, bao gồm workspace identity, token và loading/error/empty states.
+
+Header ưu tiên tìm kiếm; trang chủ đưa sản phẩm/giá thật lên sớm; catalog dùng toolbar và filter có thể bỏ riêng ở URL. Chi tiết sản phẩm tách gallery và purchase panel sticky; auth tập trung vào form; checkout có order review. Dashboard dùng KPI strip và hàng đợi thao tác dựa trên summary thật.
