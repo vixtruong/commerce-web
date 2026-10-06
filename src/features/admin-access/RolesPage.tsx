@@ -15,7 +15,7 @@ export default function RolesPage() {
       <PageHeader
         eyebrow="Access"
         title="Role bundles"
-        description="Roles provide convenient presets. Policies enforce their effective permissions."
+        description="Manage the permissions grouped into each staff role."
       />
       {roles.isPending ? (
         <Skeleton />

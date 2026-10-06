@@ -40,7 +40,7 @@ export default function UsersPage() {
       <PageHeader
         eyebrow="Access"
         title="Users"
-        description="Safe account records, assigned roles and effective permissions."
+        description="Find accounts and review their assigned roles and access."
       />
       <ListFilters list={list} placeholder={messages.emailAddress} />
       {result.isPending ? (

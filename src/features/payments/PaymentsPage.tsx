@@ -72,7 +72,12 @@ export default function PaymentsPage() {
         title="Payments"
         description="Development provider records. No real card processing or refund action is configured."
       />
-      <ListFilters list={list} statuses={Object.keys(paymentStatuses)} placeholder="Payment or order ID" />
+      <ListFilters
+        list={list}
+        statuses={Object.keys(paymentStatuses)}
+        statusKind="payment"
+        placeholder="Payment or order ID"
+      />
       {result.isPending ? (
         <Skeleton />
       ) : result.error ? (
