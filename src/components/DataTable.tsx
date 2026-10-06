@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ArrowLeft, ArrowRight, Columns3 } from 'lucide-react';
 import {
   flexRender,
   getCoreRowModel,
@@ -27,7 +28,9 @@ export function DataTable<T>({
   return (
     <div>
       <details className="column-control">
-        <summary>Columns</summary>
+        <summary>
+          <Columns3 size={15} aria-hidden="true" /> Columns
+        </summary>
         <div className="column-options">
           {table
             .getAllLeafColumns()
@@ -39,7 +42,7 @@ export function DataTable<T>({
                   checked={column.getIsVisible()}
                   onChange={column.getToggleVisibilityHandler()}
                 />
-                {column.id}
+                {typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id}
               </label>
             ))}
         </div>
@@ -98,18 +101,18 @@ export function Pagination({
   return (
     <nav className="pagination" aria-label="Pagination">
       <span>
-        {total} results · Page {page} of {pages}
+        {total} {total === 1 ? 'result' : 'results'} · Page {page} of {pages}
       </span>
       <div className="actions">
         <button className="button secondary" disabled={page <= 1 || pending} onClick={() => onPage(page - 1)}>
-          Previous
+          <ArrowLeft size={15} aria-hidden="true" /> Previous
         </button>
         <button
           className="button secondary"
           disabled={page >= pages || pending}
           onClick={() => onPage(page + 1)}
         >
-          Next
+          Next <ArrowRight size={15} aria-hidden="true" />
         </button>
       </div>
     </nav>
