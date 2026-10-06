@@ -7,6 +7,7 @@ import { orderQuery, isCheckoutTerminal, checkoutFailure } from '../orders/api';
 import { clearAttempt } from './attempt';
 import { ErrorState, PageHeader, Skeleton } from '../../components/Feedback';
 import { money } from '../../lib/format';
+import { CheckoutSteps } from '../../components/CheckoutSteps';
 const stages = [
   messages.orderReceived,
   messages.checkingAvailability,
@@ -64,6 +65,7 @@ export default function ProcessingPage({ success = false }: { success?: boolean 
       : 1;
   return (
     <section className="processing-page">
+      <CheckoutSteps current={2} />
       <PageHeader
         eyebrow={o.orderNumber}
         title={

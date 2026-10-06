@@ -13,6 +13,7 @@ import { cartTotals, money } from '../../lib/format';
 import { applyServerErrors } from '../../lib/formErrors';
 import { Input } from '../../components/FormField';
 import { EmptyState, ErrorState, PageHeader, Skeleton } from '../../components/Feedback';
+import { CheckoutSteps } from '../../components/CheckoutSteps';
 interface AcceptedOrder {
   orderId: string;
   orderNumber: string;
@@ -76,7 +77,8 @@ export default function CheckoutPage() {
         title={messages.checkoutTitle}
         description={messages.checkoutDescription}
       />
-      <div className="commerce-columns">
+      <CheckoutSteps current={1} />
+      <div className="commerce-columns checkout-columns">
         <form
           className="checkout-form"
           onSubmit={form.handleSubmit((address) => {
@@ -151,26 +153,35 @@ export default function CheckoutPage() {
             </Link>
           </div>
         </form>
-        <aside className="order-summary">
-          <h2>{messages.yourSelection}</h2>
-          {cart.data.items.map((i) => (
-            <div key={i.productId} className="summary-line">
+        <aside className="order-summary checkout-review">
+          <details className="order-review-disclosure" open>
+            <summary>
+              {messages.yourSelection}
               <span>
-                {i.productName} × {i.quantity}
+                {cart.data.items.length} {cart.data.items.length === 1 ? 'item' : 'items'}
               </span>
-              <span>{money((Math.round(i.unitPrice * 100) * i.quantity) / 100, i.currency)}</span>
+            </summary>
+            <div className="order-review-content">
+              {cart.data.items.map((i) => (
+                <div key={i.productId} className="summary-line">
+                  <span>
+                    {i.productName} × {i.quantity}
+                  </span>
+                  <span>{money((Math.round(i.unitPrice * 100) * i.quantity) / 100, i.currency)}</span>
+                </div>
+              ))}
+              {cartTotals(cart.data.items).map((t) => (
+                <div key={t.currency} className="summary-line total">
+                  <span>{messages.estimatedTotal}</span>
+                  <strong>{money(t.amount, t.currency)}</strong>
+                </div>
+              ))}
+              <p className="small muted">{messages.verifyPrices}</p>
+              <Link to="/cart" className="text-link">
+                {messages.returnToCart}
+              </Link>
             </div>
-          ))}
-          {cartTotals(cart.data.items).map((t) => (
-            <div key={t.currency} className="summary-line total">
-              <span>{messages.estimatedTotal}</span>
-              <strong>{money(t.amount, t.currency)}</strong>
-            </div>
-          ))}
-          <p className="small muted">{messages.verifyPrices}</p>
-          <Link to="/cart" className="text-link">
-            {messages.returnToCart}
-          </Link>
+          </details>
         </aside>
       </div>
     </>

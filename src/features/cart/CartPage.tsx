@@ -1,9 +1,12 @@
 import { messages } from '../../lib/messages';
 import { Link } from 'react-router-dom';
 import { useCart, useCartMutation, type CartItem as CartItemType } from './api';
-import { sampleMedia } from '../catalog/sampleMedia';
+import { ProductMedia } from '../catalog/ProductMedia';
 import { cartTotals, money } from '../../lib/format';
 import { EmptyState, ErrorState, PageHeader, Skeleton } from '../../components/Feedback';
+import { CheckoutSteps } from '../../components/CheckoutSteps';
+import { useQuery } from '@tanstack/react-query';
+import { productQuery } from '../catalog/api';
 export function CartItem({
   item,
   pending,
@@ -13,9 +16,21 @@ export function CartItem({
   pending: boolean;
   onChange: (quantity: number) => void;
 }) {
+  // Cart snapshots retain checkout data; current Catalog metadata supplies photos even for previously saved carts.
+  const product = useQuery(productQuery(item.productId));
   return (
     <article className="cart-item">
-      <img src={sampleMedia(item.sku)} alt="" width="160" height="120" />
+      <div className="cart-media">
+        <ProductMedia
+          product={{
+            name: item.productName,
+            sku: item.sku,
+            imageUrl: product.data?.imageUrl,
+            brand: product.data?.brand,
+          }}
+          eager
+        />
+      </div>
       <div>
         <Link className="item-title" to={'/products/' + item.productId}>
           {item.productName}
@@ -67,6 +82,7 @@ export default function CartPage() {
         title="Shopping cart"
         description={`${cart.data.items.length} ${cart.data.items.length === 1 ? 'product' : 'products'} in your cart`}
       />
+      <CheckoutSteps current={0} />
       <div className="commerce-columns">
         <div>
           {cart.data.items.map((item) => (
