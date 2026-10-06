@@ -93,6 +93,8 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
   const requestGeneration = generation;
   if (authenticated && !accessToken && hasSession()) await rotate();
   const requestId = crypto.randomUUID();
+  const requestBody = options.body;
+  const multipart = requestBody instanceof FormData;
   const send = () => {
     // Check before sending too: an old request must not execute a mutation under a newly signed-in user.
     if (authenticated && generation !== requestGeneration) throw new ApiError(messages.sessionEnded, 401);
@@ -102,11 +104,12 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
       headers: {
         Accept: 'application/json',
         'X-Correlation-Id': requestId,
-        ...(options.body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        ...(options.body === undefined || multipart ? {} : { 'Content-Type': 'application/json' }),
         ...(authenticated && accessToken ? { Authorization: 'Bearer ' + accessToken } : {}),
         ...options.headers,
       },
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      // Let the browser provide the multipart boundary while retaining the central session and error handling.
+      body: requestBody === undefined ? undefined : multipart ? requestBody : JSON.stringify(requestBody),
     });
   };
   let response: Response;

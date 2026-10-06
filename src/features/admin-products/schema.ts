@@ -4,6 +4,9 @@ export const productSchema = z.object({
   sku: z.string().trim().min(1, messages.enterSku).max(64),
   name: z.string().trim().min(1, messages.enterProductName).max(200),
   description: z.string().max(2000),
+  brand: z.string().trim().max(80).optional(),
+  categorySlug: z.string().max(120).optional(),
+  imageUrls: z.array(z.string()).max(8, 'Choose up to eight photos.'),
   priceAmount: z.number().min(0).max(999999999999.99),
   priceCurrency: z
     .string()

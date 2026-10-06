@@ -41,6 +41,13 @@ export const adminNavigation: NavigationItem[] = [
     icon: Boxes,
   },
   {
+    label: 'Collections',
+    href: '/admin/collections',
+    group: 'Commerce',
+    permission: Permissions.ProductUpdate,
+    icon: Boxes,
+  },
+  {
     label: 'Orders',
     href: '/admin/orders',
     group: 'Sales',
