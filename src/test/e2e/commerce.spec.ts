@@ -60,7 +60,8 @@ test('customer checkout reaches the persisted terminal state and rejects admin a
   const before: { quantityOnHand: number; reservedQuantity: number } = await (
     await request.get(stockUrl, { headers })
   ).json();
-  await page.goto('/products');
+  // Resolve the stable seed by search even when the catalog contains hundreds of imported models.
+  await page.goto('/products?search=KEYBOARD-001');
   await page.getByRole('heading', { name: 'Mechanical Keyboard', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Mechanical Keyboard', exact: true })).toBeVisible();
   await review(page, 'product-detail');
